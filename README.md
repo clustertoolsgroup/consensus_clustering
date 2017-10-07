@@ -1,13 +1,11 @@
 ﻿
-## Consensus CLustering
-
 ### Overview
 
 ### Contents
 
 ### Example
 
-### Requirements:
+### Requirements
 
 ### Installation
 ### References
