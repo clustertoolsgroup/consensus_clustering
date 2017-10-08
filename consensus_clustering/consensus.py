@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 __metaclass__ = type
 import numpy as np
-from scipy.spatial import distance
+from scipy.spatial import distance as spdist
 from timeit import default_timer as timer
 from datetime import timedelta
 from copy import deepcopy
 
-from lib import similarity
+from consensus_clustering.lib import similarity
 
 #----------------------------
 #Consensus Clustering
@@ -103,9 +103,9 @@ class Consensus(object):
         
         # Calculate distance matrix of hyperedges or points
         if self._recluster_what == 'clusters':
-            dists = distance.squareform(distance.pdist(hypergraph, 'jaccard'))
+            dists = spdist.squareform(spdist.pdist(hypergraph, 'jaccard'))
         elif self._recluster_what == 'points':
-            dists = distance.squareform(distance.pdist(labels, 'hamming'))
+            dists = spdist.squareform(spdist.pdist(labels, 'hamming'))
         
         # Recluster
         meta_clustering = None
