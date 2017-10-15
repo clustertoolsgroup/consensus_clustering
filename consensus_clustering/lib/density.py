@@ -59,8 +59,8 @@ class DBSCAN(object):
                 visited[i] = True
                 neighbor_indices = get_region(self._data,observation,self._eps,self._metric)
                 if len(neighbor_indices) < self._minPts:
-                    # mark as noise
-                    cluster_labels[i] = 'noise'
+                    # mark as noise, now label -1 instead of 'noise'
+                    cluster_labels[i] = -1
                     noise_counter = noise_counter + 1
                 else:
                     # move up to next cluster
