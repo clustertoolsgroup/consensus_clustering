@@ -117,3 +117,16 @@ def scale_data(data):
     std = np.std(data,axis=0)
     scaled = np.array([(data[:,i]-mean[i])/std[i] for i in range(d)]).T
     return scaled
+
+def load_iris(scale = 'False'):
+    '''
+    famous (real) iris data set, see e.g. https://en.wikipedia.org/wiki/Iris_flower_data_set
+    n=150, d=4 (labels are known, there are three different types of flowers)
+    
+    downloaded from https://cs.joensuu.fi/sipu/datasets/
+    '''
+    if scale == 'True':
+        data = scale_data(np.loadtxt('./consensus_clustering/data/iris.txt'))
+    else: 
+        data = np.loadtxt('./consensus_clustering/data/iris.txt')
+    return data
