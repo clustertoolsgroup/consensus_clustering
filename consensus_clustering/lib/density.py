@@ -122,6 +122,16 @@ class MeanShift(object):
         self._iter = None
         self._time = None
 
+        
+        @property
+        def cluster_labels(self):
+            if self._cluster_labels is None:
+                self.fit()
+            return self._cluster_labels
+        @cluster_labels.setter
+        def cluster_labels(self,value):
+            self._cluster_labels = value
+        
         if self._metric != 'euclidean':
             print('Initialized with %s metric. Use euclidean metric for classic Mean shift algorithm. \n'
                   'Bad things might happen, depending on your dataset and used metric.'%metric)
@@ -171,7 +181,7 @@ class MeanShift(object):
             print('%s iterations until termination.' % str(counter))
             print('Used bandwidth: %f' % self._bandwidth)
             print('Finished after '+str(elapsed_time))
-            print('Number of clusters found: %f'% np.max(self._cluster_labels))
+            print('Number of clusters found: %f'% np.max(self.cluster_labels))
             print('There is/are %f outliers' %self._outliers)
             print('Max within cluster distance to center: %f'%np.max(self._cluster_dist))
             print('Mean within cluster distance to center: %f' %np.mean(self._cluster_dist))
@@ -237,7 +247,7 @@ class MeanShift(object):
         clusterdist = distance.cdist(diffvector, np.array([[0]*d]), metric=self._metric)
         self._cluster_centers = clustercenters
         self._cluster_dist = clusterdist
-        self._cluster_labels = labels
+        self.cluster_labels = labels
 
     def gaussianKernel(self, points, points2):
         '''
