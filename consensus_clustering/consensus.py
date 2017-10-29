@@ -195,9 +195,9 @@ class Consensus(object):
             if n_j > 0:
                 entropy_b += n_j * np.log(n_j / n)
             
-        print("mutual information: {0}".format(mutual_information))
-        print("entropy a: {0}".format(entropy_a))
-        print("entropy b: {0}".format(entropy_b))
+        # print("mutual information: {0}".format(mutual_information))
+        # print("entropy a: {0}".format(entropy_a))
+        # print("entropy b: {0}".format(entropy_b))
         
         result = mutual_information
         if entropy_a * entropy_b > 0:
