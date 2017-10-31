@@ -41,7 +41,8 @@ class Consensus(object):
         self._spectral_params = spectral_params
         self._cluster_labels = None
         self._m = len(clusterings)
-        self._anmi = None
+        self._anmi = None # average normalized mutual information of consensus
+        self._nmi_arr = None # array of all NMI's of the clusterings with consensus
         
         # Safety checks
         assert self._m > 0, "the list of fitted clustering objects is empty"
@@ -68,6 +69,15 @@ class Consensus(object):
     @anmi.setter
     def anmi(self,value):
         self._anmi = value
+        
+    @property
+    def nmi_arr(self):
+        if self._nmi_arr is None:
+            self.fit()
+        return self._nmi_arr
+    @nmi_arr.setter
+    def nmi_arr(self,value):
+        self._nmi_arr = value
 
     def fit(self):
         '''
@@ -135,17 +145,14 @@ class Consensus(object):
                 self._cluster_labels[i] = np.random.choice(np.flatnonzero(point_label_buckets[i, :] == point_label_buckets[i, :].max()))
         # self._cluster_labels = np.array(self._cluster_labels)
         
-        # Compute ANMI (average normalized mutual information) of consensus with clusterings
+        # Compute ANMI and NMI-array (average normalized mutual information) of consensus with clusterings
         self._anmi = 0
-        for clustering in self._clusterings:
-            # print(type(clustering))
-            # print(type(clustering.cluster_labels))
-            # print(type(self.cluster_labels))
-            self._anmi += self.compute_nmi(self.cluster_labels, clustering.cluster_labels)
-        #for i in range(self._m):
-            #print(type(self._clusterings[i]))
-            #print(type(self._clusterings[i].cluster_labels))
-        self._anmi = self._anmi / self._m
+        self._nmi_arr = np.zeros(self._m)
+        for i, clustering in enumerate(self._clusterings):
+            nmi = self.compute_nmi(self.cluster_labels, clustering.cluster_labels)
+            # self._anmi += nmi
+            self._nmi_arr[i] = nmi
+        self._anmi = np.sum(self._nmi_arr) / self._m
 
         # Algorithm verbosity
         if self._verbose:
@@ -174,15 +181,15 @@ class Consensus(object):
         n = len(labels_a)
         k_a = len(np.unique(labels_a))
         k_b = len(np.unique(labels_b))
-        entropy_a = 0
-        entropy_b = 0
+        a_normalizer = 0 # negative entropy of clustering A, but with n cancelled
+        b_normalizer = 0
         
         # Compute mutual information estimate and entropy estimate of a (with n cancenlled)
         mutual_information = 0
         for i in range(k_a):
             n_i = sum(labels_a == i)
             if n_i > 0:
-                entropy_a += n_i * np.log(n_i / n)
+                a_normalizer += n_i * np.log(n_i / n)
                 for j in range(k_b):
                     n_j = sum(labels_b == j)
                     n_ij = sum((labels_a == i) * (labels_b == j))
@@ -193,15 +200,15 @@ class Consensus(object):
         for j in range(k_b):
             n_j = sum(labels_b == j)
             if n_j > 0:
-                entropy_b += n_j * np.log(n_j / n)
+                b_normalizer += n_j * np.log(n_j / n)
             
         # print("mutual information: {0}".format(mutual_information))
-        # print("entropy a: {0}".format(entropy_a))
-        # print("entropy b: {0}".format(entropy_b))
+        # print("entropy-normalizer a: {0}".format(a_normalizer))
+        # print("entropy-normalizer b: {0}".format(b_normalizer))
         
         result = mutual_information
-        if entropy_a * entropy_b > 0:
-            result /= np.sqrt(entropy_a * entropy_b)
+        if a_normalizer * b_normalizer > 0:
+            result /= np.sqrt(a_normalizer * b_normalizer)
         
         return result
         
