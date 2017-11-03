@@ -7,7 +7,7 @@ from datetime import timedelta
 from scipy.linalg import eig
 from itertools import product
 
-from distance import KMeans
+from consensus_clustering.lib.distance import KMeans
 
 #----------------------------
 #SpectralClustering
