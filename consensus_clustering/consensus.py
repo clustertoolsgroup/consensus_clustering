@@ -98,6 +98,7 @@ class Consensus(object):
         for j in range(self._m):
             labels[:, j] = self._clusterings[j].cluster_labels
             num_unique_labels[j] = len(np.unique(self._clusterings[j].cluster_labels))
+            # possibly just collect the LABELS and not the number of labels? see below...
         num_edges = None
         hypergraph = None
         
@@ -109,6 +110,7 @@ class Consensus(object):
             for j in range(self._m): # for all clusterings
                 for l in range(num_unique_labels[j]): # for all cluster labels
                     hypergraph[cluster_sum + l, :] = (labels[:, j] == l)
+                    # ...this incorrectly assumes, that all labels lie in {0, ..., k(C)-1} !
                 cluster_sum += num_unique_labels[j]
         
         # Calculate distance matrix of hyperedges or points
@@ -223,5 +225,7 @@ class Consensus(object):
         for i in range(len(clustering_obj_copy.cluster_labels)):
             if clustering_obj_copy.cluster_labels[i] == 'noise':
                 clustering_obj_copy.cluster_labels[i] = 0
+            # if clustering_obj_copy.cluster_labels[i] == -1:
+                # clustering_obj_copy.cluster_labels[i] = 0
         clustering_obj_copy.cluster_labels = np.array(clustering_obj_copy.cluster_labels)
         return clustering_obj_copy
