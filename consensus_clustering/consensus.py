@@ -98,7 +98,6 @@ class Consensus(object):
         for j in range(self._m):
             labels[:, j] = self._clusterings[j].cluster_labels
             num_unique_labels[j] = len(np.unique(self._clusterings[j].cluster_labels))
-            # possibly just collect the LABELS and not the number of labels? see below...
         num_edges = None
         hypergraph = None
         
@@ -108,9 +107,9 @@ class Consensus(object):
             hypergraph = np.zeros((num_edges, self._n)).astype(int)
             cluster_sum = 0
             for j in range(self._m): # for all clusterings
-                for l in range(num_unique_labels[j]): # for all cluster labels
-                    hypergraph[cluster_sum + l, :] = (labels[:, j] == l)
-                    # ...this incorrectly assumes, that all labels lie in {0, ..., k(C)-1} !
+                # for l in range(num_unique_labels[j]): # for all cluster labels NO! See below
+                for l, label in enumerate(np.unique(self._clusterings[j].cluster_labels)):
+                    hypergraph[cluster_sum + l, :] = (labels[:, j] == label)
                 cluster_sum += num_unique_labels[j]
         
         # Calculate distance matrix of hyperedges or points
@@ -170,8 +169,8 @@ class Consensus(object):
         Computes the normalized mutual information between two clusterings.
         
         Args:
-            labels_a: labels of clustering a, ranging from 0 to k_a - 1, where k_a is the number of labels in that clustering
-            labels_b: labels of clustering b, ranging from 0 to k_b - 1, where k_b is the number of labels in that clustering
+            labels_a: labels of clustering a
+            labels_b: labels of clustering b
             
         Output:
             normalized mutual information
@@ -181,28 +180,30 @@ class Consensus(object):
         
         # Init
         n = len(labels_a)
-        k_a = len(np.unique(labels_a))
-        k_b = len(np.unique(labels_b))
+        # k_a = len(np.unique(labels_a))
+        # k_b = len(np.unique(labels_b))
         a_normalizer = 0 # negative entropy of clustering A, but with n cancelled
         b_normalizer = 0
         
         # Compute mutual information estimate and entropy estimate of a (with n cancenlled)
         mutual_information = 0
-        for i in range(k_a):
-            n_i = sum(labels_a == i)
-            if n_i > 0:
-                a_normalizer += n_i * np.log(n_i / n)
-                for j in range(k_b):
-                    n_j = sum(labels_b == j)
-                    n_ij = sum((labels_a == i) * (labels_b == j))
-                    if n_ij > 0:
-                        mutual_information += n_ij * np.log(n * n_ij / n_i / n_j)
+        # for i in range(k_a):
+        for a in np.unique(labels_a):
+            n_a = sum(labels_a == a)
+            if n_a > 0:
+                a_normalizer += n_a * np.log(n_a / n)
+                # for j in range(k_b):
+                for b in np.unique(labels_b):
+                    n_b = sum(labels_b == b)
+                    n_ab = sum((labels_a == a) * (labels_b == b))
+                    if n_ab > 0:
+                        mutual_information += n_ab * np.log(n * n_ab / n_a / n_b)
                 
         # Compute entropy estimate of b (with n cancenlled)
-        for j in range(k_b):
-            n_j = sum(labels_b == j)
-            if n_j > 0:
-                b_normalizer += n_j * np.log(n_j / n)
+        for b in np.unique(labels_b):
+            n_b = sum(labels_b == b)
+            if n_b > 0:
+                b_normalizer += n_b * np.log(n_b / n)
             
         # print("mutual information: {0}".format(mutual_information))
         # print("entropy-normalizer a: {0}".format(a_normalizer))
